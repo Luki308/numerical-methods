@@ -1,0 +1,236 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+
+\setlength{\parindent}{0pt}
+
+\textheight 23.2 cm
+
+\textwidth 6.0 in
+
+\hoffset = -0.5 in
+
+\voffset = -2.4 cm
+
+\title{Metody Numeryczne\\
+    Projekt 1}
+\author{Łukasz Lepianka IAD 311333}
+\date{11 grudnia 2022}
+
+\begin{document}
+
+\maketitle
+
+\begin{center}
+    \Large{
+        \bf{
+            Całkowanie Numeryczne
+            }
+    }
+\end{center}
+
+\begin{center}
+        \bf{
+            Obliczanie całek na prostokącie \(\mathbf{D = [a,b]\times[c,d]}\), \\
+            wykorzystując złożoną kwadraturę trapezów
+            }
+    \vskip20ex
+\end{center}
+
+\section{Problem}
+Obliczanie całek \(\iint_D f(x,y) \,dx\,dy\), gdzie \(D = \{(x,y) \in \mathbb{R}^2 : x^2+y^2 \leq 1\}\) przez transformację na prostokąt \([0,1] \times [0,2\pi]\) (współrzędne biegunowe) i zastosowanie złożonych kwadratur prostokątów ze względu na każdą zmienną.
+
+\section{Opis Metody}
+
+\paragraph{Ogólny przypadek:\\}
+Mamy do policzenia całkę:
+
+\begin{align}\label{f}
+   \int_c^d (\int_a^b f(x,y) \,dx)\,dy, 
+\end{align}
+
+gdzie \(f: [a,b] \times [c,d] \xrightarrow{} \mathbb{R}\) jest pewną funkcją całkowalną. \\
+
+Stosujemy złożenie kwadratur ze względu na poszczególne zmienne i otrzymujemy wzór na obliczenie całki podwójnej:
+
+\begin{align}\label{kwadratura}
+    S(f) = \sum_{i=0}^{n}\sum_{j=0}^{m}c_{ij}f(x_i,y_j),
+\end{align}
+gdzie:
+\begin{itemize}
+    \item $n,m$ to liczby węzłów dla kwadratur złożonych po poszczególnych zmiennych 
+    \item $C = BA^T$ to macierz będąca iloczynem macierzy współczynników kwadratur dla poszczególnych zmiennych 
+    \item $x_i,y_j$ to kolejne węzły
+\end{itemize}
+
+
+\paragraph{Aby policzyć daną całkę korzystając z kwadratury należy:}
+\begin{enumerate}
+    \item Stworzyć macierz C współczynników kwadratury.
+    \item Obliczyć wartość funkcji podcałkowej w węzłach (i wpisać do macierzy W).
+    \item Obliczyć wartość kwadratury $S(f) = \sum_{i=0}^{n}\sum_{j=0}^{m}c_{ij}f(x_i,y_j)$.
+\end{enumerate}
+
+\paragraph{Wykorzystanie kwadratury trapezów:\\}
+
+1.Wyznaczanie macierzy $C = BA^T, C\in \mathbb{R}^{(n+1) \times (m+1)}$: \\
+Macierze współczynników kwadratury trapezów dla poszczególnych zmiennych wyglądają następująco: 
+
+\[A = \frac{H_1}{2} \begin{pmatrix}
+    1\\
+    2\\
+    \vdots\\
+    2\\
+    1
+\end{pmatrix}
+\qquad
+B = \frac{H_2}{2} \begin{pmatrix}
+    1\\
+    2\\
+    \vdots\\
+    2\\
+    1
+\end{pmatrix},\]
+
+gdyż:
+\[S(f) = \frac{H}{2}(f(a)+f(b)+2\sum_{i=1}^{n-1}f(a+iH))\]
+więc:
+
+\[C = \frac{H_1H_2}{4}
+\begin{pmatrix}
+    1 & 2 & 2 & \dots & 2 & 1 \\
+    2 & 4 & 4 & \dots & 4 & 2 \\
+    2 & 4 & 4 & \dots & 4 & 2 \\
+    \vdots & \vdots & \vdots & \ddots & \vdots & \vdots \\
+    2 & 4 & 4 & \dots & 4 & 2 \\
+     1 & 2 & 2 & \dots & 2 & 1
+\end{pmatrix}\]
+
+2. Obliczanie wartości funkcji \\
+Na początku trzeba zamienić zmienne w podwójnej całce na $r$ oraz $\phi$ według wzoru:
+\[\iint_D f(x,y) \,dx\,dy = \iint_\Delta f(x(r,\phi),y(r,\phi))|\det J_F(r,\phi)| \,dr\,d\phi\]
+$\Delta = [0,1]\times[0,2\pi]$\\
+Czyli funkcja podcałkowa jest postaci:
+\begin{align}\label{biegunowe}
+    g(r,\phi) = r\cdot f(r\cdot cos(\phi),r\cdot sin(\phi))
+\end{align}
+Następnie trzeba stworzyć macierz $W$, gdzie $w_{ij} = g(x_i, y_j)$\\\\
+3. Obliczenie wartości kwadratury\\
+Można to zrobić jako standardowy iloczyn skalarny macierzy C i W.
+
+\section{Opis programu}
+\paragraph{Opis działania metod\\}
+Program podzielony jest na 1 skrypt i 3 funkcje:
+\begin{enumerate}
+    \item Main.m - skrypt główny, w którym obliczane są wartości całek i błędu oraz zwizualizowane są używane funkcje.
+    \item f.m - funkcja obliczająca wartość dowolnej funkcji podcałkowej z treści zadania. Tutaj można zmieniać jak ma wyglądać dana funkcja. (\ref{f})
+    \item fBiegunowe.m - funkcja obliczająca wartość funkcji podcałkowej we współrzędnych biegunowych (\ref{biegunowe})
+    \item trapezy.m - funkcja obliczająca wartość złożonej kwadratury trapezów (\ref{kwadratura})
+\end{enumerate}
+
+\paragraph{Opis parametrów funkcji}
+\begin{enumerate}
+    \item Main.m - nie ma żadnych parametrów
+    \item f(x,y)
+        \begin{enumerate}
+            \item Argumenty wejściowe
+            \begin{enumerate}
+                \item x,y - argumenty funkcji
+            \end{enumerate}
+            \item Argumenty wyjściowe
+            \begin{enumerate}
+                  \item wartosc - wartość funkcji w punkcie (x,y)
+            \end{enumerate}
+        \end{enumerate}
+    \item fBiegunowe(r, fi, f)
+        \begin{enumerate}
+            \item Argumenty wejściowe
+            \begin{enumerate}
+                \item r,fi - argumenty funkcji
+                \item f - możliwość podania funkcji, której współrzędne chcemy zamienić na biegunowe. Domyślnie jest to funkcja f.
+            \end{enumerate}
+            \item Argumenty wyjściowe
+            \begin{enumerate}
+                  \item wartosc - wartość funkcji dla (r,$\phi$)
+            \end{enumerate}
+        \end{enumerate}
+    \item trapezy(funkcja,a,b,c,d,n,m)
+    \begin{enumerate}
+            \item Argumenty wejściowe
+            \begin{enumerate}
+                \item funkcja - funkcja, którą chcemy scałkować
+                \item a,b,c,d - Wartości skrajne prostokąta $[a,b]\times[c,d]$
+                \item n,m - liczba kroków; n dla zmiennej $x$, m dla zmiennej $y$.
+            \end{enumerate}
+            \item Argumenty wyjściowe
+            \begin{enumerate}
+                  \item wartosc - wartość kwadratury trapezów na prostokącie $[a,b]\times[c,d]$ dla funkcji "funkcja" przy liczbie kroków n i m.
+            \end{enumerate}
+        \end{enumerate}
+\end{enumerate}
+
+\section{Przykłady}
+\paragraph{Sprawdzenie funkcji elementarnych}
+\begin{enumerate}
+    \item $f(x,y) = 1$ - koło, prosty przykład do sprawdzenia czy działa
+    \item $f(x,y) = \frac{1}{x+y}$ - w metodzie wbudowanej działa, w trapezowej nie, bo próbujemy podzielić przez 0, np. dla punktu (0,0)
+    \item $f(x,y) = \sqrt{x+y}$ - zbliżony wynik, ale zespolony 
+    \item $f(x,y) = \sqrt{|x+y|}$ - brak zespolonych
+    \item $f(x,y) = \sqrt{x^2+y^2}$ - (normalnie)
+    \item $f(x,y) = \ln(x+y)$ - podobna sytuacja co w pkt 2. Dla $log(0+0)$ wartość nie istnieje, więc kwadratura trapezowa nie działa
+    \item $f(x,y) = \ln(x^2+y^2 + 0.0001)$ - pozbycie się problemu powyżej poprzez dodanie małej stałej
+    \item $f(x,y) = e^{(x+y)}$ - (normalnie)
+    \item $f(x,y) = sin(x)-cos(y)$ - (normalnie)
+    \item $f(x,y) = tg(x)-ctg(y)$ - nie liczy kwadratury trapezów (NaN), bo np ctg(0) = NaN
+    \item $f(x,y) = x^{10}-y^{10}$ - odejmowanie bardzo małych i bardzo bliskich liczb 
+\end{enumerate}
+\paragraph{Porównanie wyników i błędów: \\}
+Wartości są przybliżone do 4 miejsc po przecinku\\
+\begin{tabular}{c|c|c|c}
+    \hline
+    f(x,y) & integral2 & trapezy100 & bladWzgledny \\
+    \hline
+         $1$ & 3.1415 & 3.1419 & 1.0000e-04 \\
+    \hline
+         $\frac{1}{x+y}$ & 0.7861 & NaN & NaN  \\
+    \hline
+         $\sqrt{x+y}$ & 1.1398 + 1.1398i & 1.1414 + 1.1410i & 0.0012 \\
+    \hline
+        $\sqrt{|x+y|}$ & 2.2797 & 2.2824 & 0.0012 \\
+    \hline
+        $\sqrt{x^2+y^2}$ & 2.0944 & 2.0951 & 3.4849e-04 \\
+    \hline
+        $\ln(x+y)$ & -2.6586 + 4.9348i & NaN + 4.9353i & NaN \\
+    \hline
+        $\ln(x^2+y^2 + 0.0001)$ & -3.1383 & -3.1372 & 3.8840e-04  \\
+    \hline
+        $e^{(x+y)}$ & 3.9952 & 3.9976 & 6.0241e-04 \\
+    \hline
+        $sin(x)-cos(y)$ & -2.7649 & -2.7650 & 2.5084e-05 \\
+    \hline
+        $tg(x)-ctg(y)$ & -6.3897e-08 & NaN & NaN \\
+    \hline
+        $x^{10}-y^{10}$ & -1.5073e-14 & 5.1582e-05 & 3.4220e+09
+\end{tabular}
+
+\section{Analiza i Komentarz do Wyników}
+Postanowiłem przebadać obliczanie całki dla większości typów funkcji elementarnych. W powyższej tabelce widać, że najmniejszy bład zachodzi dla funkcji sin(x)-cos(x) (ma najmniejszy błąd). Reszta funkcji zachowuje się na podobnym poziomie, chyba że nie jest dobrze uwarunkowana numerycznie, np. ostatni przykład, gdzie błąd jest bardzo duży.\\
+Ponadto warto zwrócić uwagę na funkcje $\sqrt{x+y}$ oraz $\ln(x+y)$, które dostają argumenty poza ich "naturalną" dziedziną liczb rzeczywistych dodatnich, to jednak i tak obie funkcje: wbudowana i kwadratura trapezów dają sobie radę i zwracają wynik w formie liczb zespolonych (ale nie rysują się wykresy).\\
+Ostatnią rzeczą wartą zauważenia jest to, że w przypadku gdy funkcja wykonuje działanie niezdefiniowane (jak np. w przypadku funkcji $\frac{1}{x+y}$ dla x=0 i y=0 następuje dzielenie przez 0) to kwadratura trapezów nie liczy całki, ponieważ nie jest w stanie policzyć wartości dla jakiegoś argumentu wykraczającego poza dziedzinę.\\
+\paragraph{Wykresy\\}
+\graphicspath{ {./images/} }
+\includegraphics[width=\textwidth]{Wykres1}\\
+\includegraphics[width=\textwidth]{Wykres2}\\
+\includegraphics[width=\textwidth]{Wykres4}\\
+\includegraphics[width=\textwidth]{Wykres5}\\
+\includegraphics[width=\textwidth]{Wykres7}\\
+\includegraphics[width=\textwidth]{Wykres8}\\
+\includegraphics[width=\textwidth]{Wykres9}\\
+\includegraphics[width=\textwidth]{Wykres10}\\
+\includegraphics[width=\textwidth]{Wykres11}\\
+\section{Podsumowanie}
+Kwadratura trapezów złożonych w miarę poprawnie liczy wartość całki dla funkcji elementarnych (na poziomie błędu $10^{-4}$, dla 100 kroków). Wartość błędu można jednak zmniejszyć poprzez zwiększenie liczby kroków ze 100 na większą liczbę np.1000 lub 10000. Problemem nie jest wkroczenie na zbiór liczb zespolonych, ale wykroczenie poza dziedzinę funkcji oraz ewentualne złe uwarunkowanie numeryczne.
+\end{document}
